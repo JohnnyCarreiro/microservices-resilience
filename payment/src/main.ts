@@ -5,7 +5,7 @@ const httpServer = new ExpressAdapter();
 
 const processTransaction = new ProcessTransaction();
 
-httpServer.on("post", "/transaction", async (params: any, data: any) => {
+httpServer.on("post", "/transactions", async (params: any, data: any) => {
   const output = await processTransaction.execute(data);
   return output;
 });

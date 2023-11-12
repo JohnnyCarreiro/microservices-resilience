@@ -26,4 +26,8 @@ export class Ticket {
   getStatus(): string {
     return this.status;
   }
+
+  confirmPayment(): void {
+    this.status = "approved";
+  }
 }

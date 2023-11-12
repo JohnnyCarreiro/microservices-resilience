@@ -4,11 +4,19 @@ import { TicketMemoryRepository } from "./infra/repository/ticket-memory-reposit
 import { EventMemoryRepository } from "./infra/repository/event-memory-repository";
 import { GetTicketById } from "./application/use-cases/get-ticket-by-id";
 import { ExpressAdapter } from "./infra/http/express-adapter";
+import { AxiosHttpClient } from "./infra/http/axios-http-client";
+import { PaymentGateway } from "./infra/gateway/payment-gateway";
 
 const httpServer = new ExpressAdapter();
+const httpClient = new AxiosHttpClient();
+const paymentGateway = new PaymentGateway(httpClient);
 const ticketRepository = new TicketMemoryRepository();
 const eventRepository = new EventMemoryRepository();
-const purchaseTicket = new PurchaseTicket(ticketRepository, eventRepository);
+const purchaseTicket = new PurchaseTicket(
+  ticketRepository,
+  eventRepository,
+  paymentGateway,
+);
 const getTicketById = new GetTicketById(ticketRepository, eventRepository);
 eventRepository.save(new Event("Event Name", 100, "event_001"));
 

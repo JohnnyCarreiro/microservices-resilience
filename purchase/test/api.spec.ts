@@ -17,4 +17,5 @@ it("should use api request to purchase a new Ticket", async () => {
     `http://localhost:3000/tickets/${ticketCode}`,
   );
   expect(response.data.ticketCode).toBe(ticketCode);
+  expect(response.data.status).toBe("approved");
 });
