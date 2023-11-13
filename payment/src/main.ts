@@ -5,11 +5,9 @@ import { RabbitMQAdapter } from "./infra/queue/rabbit_mq_adapter";
 
 (async function init() {
   const httpServer = new ExpressAdapter();
-
-  const processTransaction = new ProcessTransaction();
-
   const queue = new RabbitMQAdapter();
   await queue.connect();
+  const processTransaction = new ProcessTransaction(queue);
   new PaymentQueueConsumer(queue, processTransaction);
 
   httpServer.on("post", "/transactions", async (params: any, data: any) => {

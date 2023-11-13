@@ -1,10 +1,13 @@
+import { Queue } from "@/infra/queue/queue";
+
 export class ProcessTransaction {
-  async execute(input: Input): Promise<Output> {
+  constructor(private queue: Queue) {}
+  async execute(input: Input): Promise<void> {
     console.log("Purchase to Process", input);
-    return {
+    await this.queue.publish("transactionApproved", {
       ticketCode: input.ticketCode,
       success: true,
-    };
+    });
   }
 }
 

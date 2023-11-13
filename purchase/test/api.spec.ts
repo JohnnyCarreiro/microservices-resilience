@@ -1,7 +1,13 @@
 import axios from "axios";
 import { randomUUID } from "node:crypto";
 
-it.skip("should use api request to purchase a new Ticket", async () => {
+function sleep(time: number) {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(true), time);
+  });
+}
+
+it("should use api request to purchase a new Ticket", async () => {
   const ticketCode = randomUUID();
   await axios.post("http://localhost:3000/purchases", {
     ticketCode,
@@ -13,6 +19,7 @@ it.skip("should use api request to purchase a new Ticket", async () => {
       vendor: "stripe",
     },
   });
+  await sleep(500);
   const response = await axios.get(
     `http://localhost:3000/tickets/${ticketCode}`,
   );

@@ -5,6 +5,8 @@ import { EventMemoryRepository } from "./infra/repository/event-memory-repositor
 import { GetTicketById } from "./application/use-cases/get-ticket-by-id";
 import { ExpressAdapter } from "./infra/http/express-adapter";
 import { RabbitMQAdapter } from "./infra/queue/rabbit_mq_adapter";
+import { TicketConsumer } from "./infra/consumer/ticket-consumer";
+import { ConfirmTicket } from "./application/use-cases/confirm-ticket";
 
 async function init() {
   const httpServer = new ExpressAdapter();
@@ -17,11 +19,19 @@ async function init() {
     eventRepository,
     queue,
   );
+  new TicketConsumer(
+    queue,
+    new ConfirmTicket(ticketRepository),
+    purchaseTicket,
+  );
+
   const getTicketById = new GetTicketById(ticketRepository, eventRepository);
   eventRepository.save(new Event("Event Name", 100, "event_001"));
 
   httpServer.on("post", "/purchases", async (params: any, data: any) => {
-    await purchaseTicket.execute(data);
+    // await purchaseTicket.execute(data);
+    // Process Ticket purchase could be a command
+    await queue.publish("purchaseTicket", data);
   });
 
   httpServer.on<{ code: string }, any>(
