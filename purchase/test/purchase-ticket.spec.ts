@@ -4,21 +4,20 @@ import { PurchaseTicket } from "@/application/use-cases/purchase-ticket";
 import { EventMemoryRepository } from "@/infra/repository/event-memory-repository";
 import { TicketMemoryRepository } from "@/infra/repository/ticket-memory-repository";
 import { randomUUID } from "node:crypto";
-import { AxiosHttpClient } from "@/infra/http/axios-http-client";
-import { PaymentGateway } from "@/infra/gateway/payment-gateway";
+import { RabbitMQAdapter } from "@/infra/queue/rabbit_mq_adapter";
 
 it("should purchase a Ticket", async () => {
   const eventCode = "event_001";
   const ticketRepository = new TicketMemoryRepository();
   const eventRepository = new EventMemoryRepository();
-  const httpClient = new AxiosHttpClient();
-  const paymentGateway = new PaymentGateway(httpClient);
+  const queue = new RabbitMQAdapter();
+  await queue.connect();
   const ticketCode = randomUUID();
   eventRepository.save(new Event("Event Name", 100, "event_001"));
   const purchaseTicket = new PurchaseTicket(
     ticketRepository,
     eventRepository,
-    paymentGateway,
+    queue,
   );
   const input = {
     ticketCode,
@@ -36,7 +35,7 @@ it("should purchase a Ticket", async () => {
   const output = await getTicketById.execute(ticketCode);
   expect(output.ticketCode).toBe(ticketCode);
   expect(output.total).toBe(100);
-  // expect(output.status).toBe("waiting_payment");
-  expect(output.status).toBe("approved");
+  expect(output.status).toBe("waiting_payment");
+  // expect(output.status).toBe("approved");
   expect(output.eventName).toBe("Event Name");
 });

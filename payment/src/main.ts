@@ -1,13 +1,21 @@
 import { ProcessTransaction } from "./application/process-transaction";
+import { PaymentQueueConsumer } from "./infra/consumer/queue/payment-queue-consumer";
 import { ExpressAdapter } from "./infra/http/express-adapter";
+import { RabbitMQAdapter } from "./infra/queue/rabbit_mq_adapter";
 
-const httpServer = new ExpressAdapter();
+(async function init() {
+  const httpServer = new ExpressAdapter();
 
-const processTransaction = new ProcessTransaction();
+  const processTransaction = new ProcessTransaction();
 
-httpServer.on("post", "/transactions", async (params: any, data: any) => {
-  const output = await processTransaction.execute(data);
-  return output;
-});
+  const queue = new RabbitMQAdapter();
+  await queue.connect();
+  new PaymentQueueConsumer(queue, processTransaction);
 
-httpServer.listen(3001);
+  httpServer.on("post", "/transactions", async (params: any, data: any) => {
+    const output = await processTransaction.execute(data);
+    return output;
+  });
+
+  httpServer.listen(3001);
+})();

@@ -1,5 +1,6 @@
 export class ProcessTransaction {
   async execute(input: Input): Promise<Output> {
+    console.log("Purchase to Process", input);
     return {
       ticketCode: input.ticketCode,
       success: true,

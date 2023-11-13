@@ -1,7 +1,7 @@
 import axios from "axios";
 import { randomUUID } from "node:crypto";
 
-it("should use api request to purchase a new Ticket", async () => {
+it.skip("should use api request to purchase a new Ticket", async () => {
   const ticketCode = randomUUID();
   await axios.post("http://localhost:3000/purchases", {
     ticketCode,

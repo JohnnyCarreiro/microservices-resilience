@@ -2,12 +2,14 @@ import { Ticket } from "@/domain/entities/ticket";
 import { EventRepository } from "@/domain/repository/event-repository";
 import { TicketRepository } from "@/domain/repository/ticket-repository";
 import { PaymentGateway } from "@/infra/gateway/payment-gateway";
+import { Queue } from "@/infra/queue/queue";
 
 export class PurchaseTicket {
   constructor(
     private ticketRepository: TicketRepository,
     private eventRepository: EventRepository,
-    private paymentGateway: PaymentGateway,
+    // private paymentGateway: PaymentGateway,
+    private queue: Queue,
   ) {}
 
   async execute(input: Input): Promise<void> {
@@ -18,7 +20,16 @@ export class PurchaseTicket {
       event,
       input.ticketCode,
     );
-    const paymentOutput = await this.paymentGateway.execute({
+    // const paymentOutput = await this.paymentGateway.execute({
+    //   ticketCode: ticket.id,
+    //   price: event.price,
+    //   creditCard: {
+    //     token: input.creditCard.token,
+    //     vendor: input.creditCard.vendor,
+    //   },
+    // });
+    await this.ticketRepository.save(ticket);
+    this.queue.publish("ticketPurchased", {
       ticketCode: ticket.id,
       price: event.price,
       creditCard: {
@@ -26,12 +37,6 @@ export class PurchaseTicket {
         vendor: input.creditCard.vendor,
       },
     });
-    if (paymentOutput.success) {
-      ticket.confirmPayment();
-      await this.ticketRepository.save(ticket);
-    } else {
-      throw new Error("Payment Rejected");
-    }
     // return {
     //   ticketCode: ticket.id,
     // };
